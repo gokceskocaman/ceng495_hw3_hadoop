@@ -12,7 +12,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 public class total {
 
-  public static class TotalMapper extends Mapper<LongWritable, Text, Text, LongWritable> {
+  public static class TotalMapper extends Mapper<LongWritable, Text, Text, DoubleWritable> {
 
     private final static DoubleWritable one = new DoubleWritable(1);
     private Text movie = new Text("total");
@@ -20,17 +20,17 @@ public class total {
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
       // Skip the header line
-      if (key.get() == 0 && value.toString().contains("name")) {
+      if (key.get() == 0 && value.toString().contains("title")) {
         return;
       }
 
-      String[] fields = value.toString().split("\t",-1);
-
-      if (fields.length >= 4) {
-        String runtimeString = fields[3];
+      // Split the line by tabs
+      String[] fields = value.toString().split("\t");
+      if (fields.length >= 15) {
+        String runtimeString = fields[14];
         try {
-          long runtime = Long.parseLong(runtimeString);
-          context.write(movie, new LongWritable(runtime));
+          double runtime = Double.parseDouble(runtimeString);
+          context.write(movie, new DoubleWritable(runtime));
         } catch (NumberFormatException e) {
           // Ignore invalid runtime values
         }
@@ -38,15 +38,15 @@ public class total {
     }
   }
 
-  public static class TotalReducer extends Reducer<Text, LongWritable, Text, LongWritable> {
+  public static class TotalReducer extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
 
-    public void reduce(Text key, Iterable<LongWritable> values, Context context)
+    public void reduce(Text key, Iterable<DoubleWritable> values, Context context)
             throws IOException, InterruptedException {
-      long totalTime = 0;
-      for (LongWritable value : values) {
+      double totalTime = 0;
+      for (DoubleWritable value : values) {
         totalTime += value.get();
       }
-      context.write(key, new LongWritable(totalTime));
+      context.write(key, new DoubleWritable(totalTime));
     }
   }
 
@@ -57,7 +57,7 @@ public class total {
     job.setMapperClass(TotalMapper.class);
     job.setReducerClass(TotalReducer.class);
     job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(LongWritable.class);
+    job.setOutputValueClass(DoubleWritable.class);
     FileInputFormat.addInputPath(job, new Path(args[0]));
     FileOutputFormat.setOutputPath(job, new Path(args[1]));
     System.exit(job.waitForCompletion(true) ? 0 : 1);
