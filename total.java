@@ -19,12 +19,12 @@ public class total {
 
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
-      // Skip the header line
+
       if (key.get() == 0 && value.toString().contains("title")) {
         return;
       }
 
-      // Split the line by tabs
+
       String[] fields = value.toString().split("\t");
       if (fields.length >= 15) {
         String runtimeString = fields[14];
@@ -32,7 +32,7 @@ public class total {
           double runtime = Double.parseDouble(runtimeString);
           context.write(movie, new DoubleWritable(runtime));
         } catch (NumberFormatException e) {
-          // Ignore invalid runtime values
+
         }
       }
     }

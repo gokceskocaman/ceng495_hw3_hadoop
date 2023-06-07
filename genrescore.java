@@ -11,7 +11,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 public class genrescore {
 
-    // Mapper class
+
     public static class GenreScoreMapper extends Mapper<Object, Text, Text, DoubleWritable> {
         private Text genre = new Text();
         private DoubleWritable score = new DoubleWritable();
@@ -20,8 +20,17 @@ public class genrescore {
 
             String[] columns = value.toString().split("\t",-1);
 
+
+            if(columns.length < 6) {
+                return;
+            }
+
             String ratingVal = columns[2].trim();
             String votesVal = columns[5].trim();
+
+            if(ratingVal.equals("rating") || votesVal.equals("numVotes")) {
+                return;
+            }
 
             try {
                 double v = Double.parseDouble(votesVal);
@@ -29,7 +38,7 @@ public class genrescore {
                 score.set(v);
                 context.write(genre, score);
             } catch (NumberFormatException e) {
-                // Handle the exception, if necessary
+
             }
 
         }

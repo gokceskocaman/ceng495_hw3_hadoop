@@ -14,7 +14,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 public class ratescore {
 
-    // Mapper class
+
     public static class RateScoreMapper extends Mapper<Object, Text, Text, DoubleWritable> {
         private Text rating = new Text();
         private DoubleWritable votes = new DoubleWritable();
@@ -25,18 +25,40 @@ public class ratescore {
 
             String ratingVal = columns[1].trim();
             String votesVal = columns[6].trim();
-            if(ratingVal.equals("G") || ratingVal.equals("PG") || ratingVal.equals("PG-13") || ratingVal.equals("R") ){
 
-                try {
-                    double v = Double.parseDouble(votesVal);
-                    rating.set(ratingVal);
-                    votes.set(v);
+            if(ratingVal.equals("rating") || votesVal.equals("numVotes")) {
+                return;
+            }
+
+            try {
+                if (ratingVal.equals("G")) {
+                    rating.set("G");
+                    double vote = Double.parseDouble(votesVal);
+                    votes.set(vote);
                     context.write(rating, votes);
-                } catch (NumberFormatException e) {
-
+                } else if (ratingVal.equals("PG-13")) {
+                    rating.set("PG-13");
+                    double vote = Double.parseDouble(votesVal);
+                    votes.set(vote);
+                    context.write(rating, votes);
+                } else if (ratingVal.equals("R")) {
+                    rating.set("R");
+                    double vote = Double.parseDouble(votesVal);
+                    votes.set(vote);
+                    context.write(rating, votes);
+                } else if (ratingVal.equals("PG")) {
+                    rating.set("PG");
+                    double vote = Double.parseDouble(votesVal);
+                    votes.set(vote);
+                    context.write(rating, votes);
                 }
 
+            } catch (NumberFormatException e) {
+                return;
             }
+
+
+
 
 
         }

@@ -19,28 +19,31 @@ public class employment {
 
         public void map(Object key, Text value, Context context)
                 throws IOException, InterruptedException {
-            // Skip the header line
-            if (((LongWritable) key).get() == 0 && value.toString().contains("title")) {
-                return;
-            }
 
-            // Split the line by tabs
+
+
+
             String[] fields = value.toString().split("\t");
+
             if (fields.length >= 10) {
                 String actorsString = fields[9];
+                if(actorsString.equals("star")){
+                    return;
+                }
                 String[] actors = actorsString.split(",");
                 for (String actor : actors) {
                     if (actor.trim().equals("star")) {
                         continue;
                     }
-                    actorName.set(actor.trim());
+                    String actor1 = actor.trim();
+                    actorName.set(actor1);
                     context.write(actorName, one);
                 }
             }
         }
     }
 
-    public static class EmploymentReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+    public static class EmploymentCounter extends Reducer<Text, IntWritable, Text, IntWritable> {
 
         public void reduce(Text key, Iterable<IntWritable> values, Context context)
                 throws IOException, InterruptedException {
@@ -57,8 +60,8 @@ public class employment {
         Job job = Job.getInstance(conf, "employment");
         job.setJarByClass(employment.class);
         job.setMapperClass(EmploymentMapper.class);
-        job.setCombinerClass(EmploymentReducer.class);
-        job.setReducerClass(EmploymentReducer.class);
+        job.setCombinerClass(EmploymentCounter.class);
+        job.setReducerClass(EmploymentCounter.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
         FileInputFormat.addInputPath(job, new Path(args[0]));

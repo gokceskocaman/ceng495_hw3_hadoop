@@ -11,22 +11,21 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 public class average {
-    public static class AverageMapper
-        extends Mapper<LongWritable, Text, Text, DoubleWritable> {
-        private DoubleWritable result = new DoubleWritable();
+    public static class AverageMapper extends Mapper<LongWritable, Text, Text, DoubleWritable> {
+        private DoubleWritable runtimeVal = new DoubleWritable();
 
-        public void map(LongWritable key, Text value, Context context)
-        throws IOException, InterruptedException {
+        public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
         String[] columns = value.toString().split("\t", -1);
-        if (columns.length >= 15) {
+
+
+        try {
             String runtime = columns[14];
-            try {
             double r = Double.parseDouble(runtime);
-            result.set(r);
-            context.write(new Text("average"), result);
-            } catch (NumberFormatException e) {
-            }
+            runtimeVal.set(r);
+            context.write(new Text("average"), runtimeVal);
+        } catch (NumberFormatException e) {
         }
+
         }
     }
 
@@ -34,8 +33,7 @@ public class average {
         extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
         private DoubleWritable result = new DoubleWritable();
 
-        public void reduce(Text key, Iterable<DoubleWritable> values, Context context)
-        throws IOException, InterruptedException {
+        public void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException, InterruptedException {
         double sum = 0.0;
         int count = 0;
         for (DoubleWritable value : values) {
